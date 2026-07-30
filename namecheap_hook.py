@@ -34,40 +34,47 @@ from typing import TypedDict, Optional
 # --- Logger Setup ---
 
 class ColorFormatter(logging.Formatter):
-    """Logging Formatter to add colors and info styling for TTY outputs."""
+    """Logging Formatter to add colors and info styling for TTY and hook outputs."""
     
-    GREY = "\x1b[38;20m"
-    YELLOW = "\x1b[33;20m"
-    RED = "\x1b[31;20m"
-    BOLD_RED = "\x1b[31;1m"
-    GREEN = "\x1b[32;20m"
-    CYAN = "\x1b[36;20m"
+    GREY = "\x1b[38;5;244m"
+    YELLOW = "\x1b[38;5;214m"
+    RED = "\x1b[38;5;196m"
+    GREEN = "\x1b[38;5;46m"
+    CYAN = "\x1b[38;5;39m"
     RESET = "\x1b[0m"
     
-    FORMATS = {
-        logging.DEBUG: GREY + "[.] %(message)s" + RESET,
-        logging.INFO: CYAN + "[i] %(message)s" + RESET,
-        logging.WARNING: YELLOW + "[!] %(message)s" + RESET,
-        logging.ERROR: RED + "[x] %(message)s" + RESET,
-        logging.CRITICAL: BOLD_RED + "[x] %(message)s" + RESET
-    }
-    
     def format(self, record):
-        force_color = os.environ.get('FORCE_COLOR') in ('1', 'true', 'True')
-        if not sys.stderr.isatty() and not force_color:
-            prefix = "[i]"
-            if record.levelno == logging.DEBUG:
-                prefix = "[.]"
-            elif record.levelno == logging.WARNING:
-                prefix = "[!]"
-            elif record.levelno in (logging.ERROR, logging.CRITICAL):
-                prefix = "[x]"
-            clean_fmt = f"{prefix} %(message)s"
-            formatter = logging.Formatter(clean_fmt)
-            return formatter.format(record)
+        message = record.getMessage()
+        
+        prefix = "[i]"
+        prefix_color = self.CYAN
+        
+        if record.levelno == logging.DEBUG:
+            prefix = "[.]"
+            prefix_color = self.GREY
+        elif record.levelno == logging.WARNING:
+            prefix = "[!]"
+            prefix_color = self.YELLOW
+        elif record.levelno in (logging.ERROR, logging.CRITICAL):
+            prefix = "[x]"
+            prefix_color = self.RED
             
-        log_fmt = self.FORMATS.get(record.levelno, "[i] %(message)s")
-        formatter = logging.Formatter(log_fmt)
+        # Color checkmarks green if present in the message
+        if "✓" in message:
+            message = message.replace("✓", f"{self.GREEN}✓{self.RESET}")
+            
+        # Support standard NO_COLOR environment variable to disable colorization
+        no_color = os.environ.get('NO_COLOR') in ('1', 'true', 'True')
+        
+        if no_color:
+            record.msg = f"{prefix} {message}"
+        else:
+            record.msg = f"{prefix_color}{prefix}{self.RESET} {message}"
+            
+        # Clear args since message is already formatted
+        record.args = ()
+        
+        formatter = logging.Formatter("%(message)s")
         return formatter.format(record)
 
 
