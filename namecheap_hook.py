@@ -45,20 +45,28 @@ class ColorFormatter(logging.Formatter):
     RESET = "\x1b[0m"
     
     FORMATS = {
-        logging.DEBUG: GREY + "[DEBUG] %(message)s" + RESET,
-        logging.INFO: CYAN + "[INFO] %(message)s" + RESET,
-        logging.WARNING: YELLOW + "[WARNING] %(message)s" + RESET,
-        logging.ERROR: RED + "[ERROR] %(message)s" + RESET,
-        logging.CRITICAL: BOLD_RED + "[CRITICAL] %(message)s" + RESET
+        logging.DEBUG: GREY + "[.] %(message)s" + RESET,
+        logging.INFO: CYAN + "[i] %(message)s" + RESET,
+        logging.WARNING: YELLOW + "[!] %(message)s" + RESET,
+        logging.ERROR: RED + "[x] %(message)s" + RESET,
+        logging.CRITICAL: BOLD_RED + "[x] %(message)s" + RESET
     }
     
     def format(self, record):
-        if not sys.stderr.isatty():
-            clean_fmt = "[%(levelname)s] %(message)s"
+        force_color = os.environ.get('FORCE_COLOR') in ('1', 'true', 'True')
+        if not sys.stderr.isatty() and not force_color:
+            prefix = "[i]"
+            if record.levelno == logging.DEBUG:
+                prefix = "[.]"
+            elif record.levelno == logging.WARNING:
+                prefix = "[!]"
+            elif record.levelno in (logging.ERROR, logging.CRITICAL):
+                prefix = "[x]"
+            clean_fmt = f"{prefix} %(message)s"
             formatter = logging.Formatter(clean_fmt)
             return formatter.format(record)
             
-        log_fmt = self.FORMATS.get(record.levelno, "[%(levelname)s] %(message)s")
+        log_fmt = self.FORMATS.get(record.levelno, "[i] %(message)s")
         formatter = logging.Formatter(log_fmt)
         return formatter.format(record)
 
@@ -132,7 +140,7 @@ def load_config(config_path: str) -> dict:
     
     # If client_ip is empty, attempt to auto-detect it
     if not config_dict['client_ip']:
-        logger.info("client_ip is blank. Auto-detecting public IP address...")
+        logger.debug("client_ip is blank. Auto-detecting public IP address...")
         config_dict['client_ip'] = auto_detect_public_ip()
         
     return config_dict
@@ -153,7 +161,7 @@ def auto_detect_public_ip() -> str:
                 ip = response.text.strip()
                 # Verify that it is a valid IP address
                 socket.inet_aton(ip)
-                logger.info(f"Auto-detected public IP: {ip}")
+                logger.debug(f"Auto-detected public IP: {ip}")
                 return ip
         except Exception as e:
             logger.warning(f"Could not fetch public IP from {url}: {e}")
@@ -574,7 +582,7 @@ def do_auth(config: dict, certbot_domain: str, certbot_validation: str) -> None:
             logger.debug(f"Querying resolver {resolver} for '{query_name}'...")
             txt_records = query_dns_txt(query_name, resolver)
             if certbot_validation in txt_records:
-                logger.info(f"Success! TXT validation value found on resolver {resolver} ({elapsed}s elapsed).")
+                logger.info(f"✓ Success! TXT validation value found on resolver {resolver} ({elapsed}s elapsed).")
                 propagated = True
                 break
                 
@@ -590,7 +598,7 @@ def do_auth(config: dict, certbot_domain: str, certbot_validation: str) -> None:
         sys.exit(1)
         
     total_time = time.time() - start_time
-    logger.info(f"DNS-01 auth challenge successfully completed in {total_time:.2f}s total.")
+    logger.info(f"✓ DNS-01 auth challenge successfully completed in {total_time:.2f}s total.")
 
 
 def do_cleanup(config: dict, certbot_domain: str, certbot_validation: str) -> None:
@@ -633,7 +641,7 @@ def do_cleanup(config: dict, certbot_domain: str, certbot_validation: str) -> No
     set_dns_hosts(sld, tld, filtered_hosts, email_type, config)
     
     total_time = time.time() - start_time
-    logger.info(f"DNS-01 cleanup challenge successfully completed in {total_time:.2f}s total.")
+    logger.info(f"✓ DNS-01 cleanup challenge successfully completed in {total_time:.2f}s total.")
 
 
 # --- CLI Interface Entrypoint ---
