@@ -1,0 +1,26 @@
+[namecheap]
+# Namecheap API Username (your Namecheap login username)
+user_name = your_username
+
+# Namecheap API User (usually the same as user_name)
+api_user = your_username
+
+# Namecheap API Key (generated in Namecheap Profile -> Tools -> Namecheap API Access)
+api_key = your_api_key
+
+# The public IP of the server running Certbot.
+# If left blank, the script will attempt to auto-detect your public IP.
+# Note: Namecheap API requires this IP to be whitelisted in your Namecheap panel.
+client_ip =
+
+# TTL in seconds for the DNS TXT record (defaults to 60)
+ttl = 60
+
+# Maximum time (in seconds) to wait for DNS propagation (defaults to 300)
+propagation_timeout = 300
+
+# Interval (in seconds) between DNS checks (defaults to 15)
+propagation_interval = 15
+
+# Set to true to use the Namecheap Sandbox API (https://api.sandbox.namecheap.com/xml.response)
+sandbox = false

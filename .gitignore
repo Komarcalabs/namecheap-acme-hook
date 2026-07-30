@@ -1,0 +1,17 @@
+# Python files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Config files (sensitive credentials)
+namecheap.ini
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# IDE and OS files
+.idea/
+.vscode/
+.DS_Store
