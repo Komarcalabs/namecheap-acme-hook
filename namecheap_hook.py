@@ -15,7 +15,7 @@ Features:
 - Configurable via namecheap.ini file.
 - Comprehensive log timing and error reporting.
 
-Author: Komarca
+Author: Komarcalabs
 License: MIT
 """
 

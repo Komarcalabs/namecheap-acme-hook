@@ -48,7 +48,7 @@ namecheap-acme-hook/
 Clone o descargue el repositorio y ejecute el script de instalación automática como root:
 
 ```bash
-git clone https://github.com/komarca/namecheap-acme-hook.git
+git clone https://github.com/Komarcalabs/namecheap-acme-hook.git
 cd namecheap-acme-hook
 sudo ./install.sh
 ```
